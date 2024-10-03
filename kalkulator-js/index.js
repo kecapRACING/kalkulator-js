@@ -1,13 +1,13 @@
 const readline = require("readline-sync");
 
 let ulangi = true;
-let history = []; // To store calculation history
-let previousResult = null; // To store the last calculation result
+let history = []; // Menyimpan riwayat kalkulasi
+let previousResult = null; // Menyimpan hasil kalkulasi terakhir
 
 while (ulangi) {
     let angkaPertama = previousResult !== null ? previousResult : readline.question("Masukkan Angka Pertama: ");
     
-    // Check if the previous result is used
+    // Cek jika hasil sebelumnya digunakan
     if (previousResult !== null) {
         const usePrevious = readline.question("Gunakan hasil sebelumnya? (y/n): ");
         if (usePrevious.toLowerCase() === "y") {
@@ -18,22 +18,33 @@ while (ulangi) {
     }
 
     const operator = readline.question("Pilih operator (+, -, *, /, %): ");
-    const angkaKedua = readline.question("Masukkan Angka Kedua: ");
+    let angkaKedua = readline.question("Masukkan Angka Kedua: ");
 
     const requiredOperator = ["+", "-", "*", "/", "%"];
 
+    // Validasi input
     if (isNaN(angkaPertama) || isNaN(angkaKedua)) {
         console.log("Inputan anda tidak valid");
     } else if (!requiredOperator.includes(operator)) {
         console.log("Pilih sesuai operator yang tersedia");
     } else {
-        const hasil = processHasil(parseFloat(angkaPertama), operator, parseFloat(angkaKedua));
+        // Memastikan angkaKedua adalah angka sebelum digunakan
+        angkaKedua = parseFloat(angkaKedua);
+
+        // Penanganan untuk pembagian
+        if (operator === "/" && angkaKedua === 0) {
+            console.log("Angka kedua tidak boleh 0. Silakan masukkan angka kedua lagi.");
+            angkaKedua = readline.question("Masukkan Angka Kedua: ");
+            angkaKedua = parseFloat(angkaKedua); // Mengkonversi input baru ke angka
+        }
+
+        const hasil = processHasil(parseFloat(angkaPertama), operator, angkaKedua);
         if (typeof hasil === "string") {
-            console.log(hasil); // Display error message if applicable
+            console.log(hasil); // Tampilkan pesan kesalahan jika ada
         } else {
             console.log(`Hasil: ${hasil}`);
-            previousResult = hasil; // Store the result for future calculations
-            history.push(`${angkaPertama} ${operator} ${angkaKedua} = ${hasil}`); // Save history
+            previousResult = hasil; // Simpan hasil untuk kalkulasi berikutnya
+            history.push(`${angkaPertama} ${operator} ${angkaKedua} = ${hasil}`); // Simpan riwayat
         }
     }
 
@@ -54,10 +65,7 @@ function processHasil(angkaPertama, operator, angkaKedua) {
         case "*":
             return angkaPertama * angkaKedua;
         case "/":
-            if (angkaKedua === 0) {
-                return "Error: Angka kedua tidak boleh 0.";
-            }
-            return angkaPertama / angkaKedua;
+            return angkaPertama / angkaKedua; // Pembagian tidak lagi menangani 0 di sini
         case "%":
             return angkaPertama % angkaKedua;
         default:
